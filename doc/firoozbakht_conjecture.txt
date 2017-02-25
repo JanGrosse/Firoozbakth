@@ -1,0 +1,39 @@
+*** Firoozbakht conjecture ***
+
+	- Graphische Oberfläche in JavaFX und Darstellung der Prime Gap Funktion.
+      Mit einem Slider (Minimum: 1000, Maximum: 1000000, Schrittweite: 10000) kann der Wertebereich für die Primzahlen verändert werden.
+	  Die graphische Darstellung wird bei Betätigung des Slider automatisch aktualisiert.
+	
+    - Prinzipiell - sofern die Rechenkapazität zur Verfügung steht - können Werte bis 10^308 analyisiert werden.
+	
+	- JUnit-Test
+	  Prüfung einer Zahl auf Primzahl.
+	  
+	- Bereich für Primzahlen n = [1..1000000]  
+	
+	a) Parallelisierte Ermittlung der Primzahlen durch Threads und Synchronisation mit CyclicBarrier.
+	
+	   Aufzeichnung der Primzahlen in der HSQLDB.
+	   Tabelle: primes.
+	   
+	   Verfahren für Ermittlung der Primzahlen: Sieve of Eratosthenes.
+	   Anzahl der Primzahlen: 78498
+	  
+	b) Parallelisierte Analyse der Primzahlen durch Threads und Synchronisation mit CyclicBarrier.
+	
+	   Aufzeichnung der Analyseergebnisse in der HSQLDB.
+	   Tabelle: firoozbakht_conjecture.
+		  
+	   Bedingung für Terminierung:
+	   n = [1..1000000] analysiert.
+	  
+	- Textuelle Ausgabe, ob das Firoozbakht’s conjecture falsifiziert wurde.
+	  
+    - Zugelassene externe Bibliotheken: hamcrest-core, hsqldb und junit.
+
+    * Bewertung    : 15 Punkte
+	
+    * Abgabetermin : Sonntag, 26.03.2017
+	  
+Software Engineering II - 2017
+Dr. Carsten Müller
