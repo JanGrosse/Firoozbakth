@@ -1,8 +1,10 @@
 package main;
 
+import java.math.BigInteger;
+
 public class Application {
     public static void main(String... args) {
-        SieveOfEratosthenes soe = new SieveOfEratosthenes(99999);
+        SieveOfEratosthenesSingleThread soe = new SieveOfEratosthenesSingleThread(new BigInteger("19199999"));
         soe.calculatePrimes();
         System.out.println(soe.extractPrimes());
         System.out.println("Finished!");

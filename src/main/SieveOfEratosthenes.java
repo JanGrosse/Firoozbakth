@@ -17,20 +17,23 @@ public class SieveOfEratosthenes {
     public void calculatePrimes() {
         int prime = 2;
         int multiplied;
-        int lowerBorder;
         while (prime <= maxInt) {
-            lowerBorder = prime * prime;
-            multiplied = prime;
+            //Start at square
+            multiplied = prime * prime;
             //Mark all multiple
             while (multiplied <= maxInt) {
+                //TODO Early overflow
+                bitSet.set(multiplied);
                 multiplied += prime;
-                if (multiplied >= lowerBorder) {
-                    bitSet.set(multiplied);
-                }
             }
             //Find next prime
             while (bitSet.get(++prime) && prime <= maxInt) ;
         }
+
+    }
+
+    public void setBit(){
+
     }
 
     public ArrayList extractPrimes() {
