@@ -1,6 +1,7 @@
 package main;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 
 public class BigBitSet implements Comparable<BigBitSet> {
     //Every long will occupy 64 bits(8 bytes). The maximum array length is Integer.MAX_VALUE - 5 (=2147483642). So theoretically almost 17 gibibytes (=64*2147483642 bits) could be stored
@@ -25,10 +26,13 @@ public class BigBitSet implements Comparable<BigBitSet> {
     //Save for speed up
     private int maxBitIndexLong = bitsPerLong - 1;
     //Instantiate calculation variables, which are used for most arithmetic and logic operations
+    private boolean akkuBitA;
     private int akkuIntA;
     private int akkuIntB;
     private long akkuLongA;
     private long akkuLongB;
+    private long akkuLongC;
+    private long akkuLongD;
     private long[] akkuBitSet;
 
     public BigBitSet(BigInteger value, boolean bitsNotStorable) {
@@ -42,7 +46,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
             }
             //Calculate needed longs
             longCount = value.divide(sixtyFour).intValue();
-            if (value.mod(sixtyFour).intValue() > 0) longCount++;
+            longCount++;
             initArray(longCount);
         } else {
             if (value.signum() == -1) throw new Error("Max value is negative!");
@@ -234,15 +238,14 @@ public class BigBitSet implements Comparable<BigBitSet> {
     /**
      * Starts incrementing at a special long
      *
+     * @reentrant true
      * @internal akkIntA as counter index
      */
-    public void increment(int index) {
-        //Out of bound check
-        if (index < 0) return;
-        //Load akku with inital index
-        akkuIntA = index;
+    public void increment(int indexMinusOne) {
+        //Out of bounds check
+        if (indexMinusOne < -1) return;
         //Increment the longs until there is no more overflow, or the end is reached
-        while (++akkuIntA < longCount && (bitSetArray[akkuIntA]++ == -1)) ;
+        while (++indexMinusOne < longCount && (bitSetArray[indexMinusOne]++ == -1)) ;
     }
 
     /**
@@ -257,15 +260,14 @@ public class BigBitSet implements Comparable<BigBitSet> {
     /**
      * Starts decrementing at special index
      *
+     * @reentrant true
      * @internal akkIntA as counter index
      */
-    public void decrement(int index) {
-        //Out of bound check
-        if (index < 0) return;
-        //Load akku with inital index
-        akkuIntA = index;
+    public void decrement(int indexPlusOne) {
+        //Out of bounds check
+        if (indexPlusOne < 1) return;
         //Decrement the longs until there is no more overflow, or the end is reached
-        while (--akkuIntA >= 0 && (bitSetArray[akkuIntA]-- == 0)) ;
+        while (--indexPlusOne >= 0 && (bitSetArray[indexPlusOne]-- == 0)) ;
     }
 
     /**
@@ -273,7 +275,10 @@ public class BigBitSet implements Comparable<BigBitSet> {
      * @internal akkuBitSet to store the other bitset
      * @internal akkuIntB to define max index
      * @internal akkuIntA as index
-     * @internal akkuLongA as temporary storage to check for overflows
+     * @internal akkuLongA as storage for the upper branch
+     * @internal akkuLongB as storage for the upper branch
+     * @internal akkuLongC as storage for the lower branch
+     * @internal akkuLongD as storage for the lower branch
      */
     public void add(BigBitSet otherSet) {
         akkuBitSet = otherSet.bitSetArray;
@@ -282,15 +287,59 @@ public class BigBitSet implements Comparable<BigBitSet> {
         if (otherSet.getLongCount() < akkuIntB) akkuIntB = otherSet.getLongCount();
         //Iterate over all longs and add them up
         for (akkuIntA = 0; akkuIntA < akkuIntB; akkuIntA++) {
-            //TODO Check if zero and skip if so
-            if (akkuBitSet[akkuIntA] == 0) continue;
-            //Add longs up and safe into temp
-            akkuLongA = bitSetArray[akkuIntA] + akkuBitSet[akkuIntA];
-            //TODO Check for an long overflow and increment next long if so
-            if (bitSetArray[akkuIntA] > akkuLongA) increment(akkuIntA + 1);
-            //Save temp into according long
-            bitSetArray[akkuIntA] = akkuLongA;
+            //branch
+            akkuLongA = (bitSetArray[akkuIntA] & 0xFFFFFFFF00000000L) >>> 1L;
+            akkuLongB = (akkuBitSet[akkuIntA] & 0xffffffff00000000L) >>> 1L;
+            akkuLongC = akkuBitSet[akkuIntA] & 0x00000000FFFFFFFFL;
+            akkuLongD = bitSetArray[akkuIntA] & 0x00000000FFFFFFFFL;
+            //add lower branch
+            akkuLongC += akkuLongD;
+            //Check for carry by checking the 33th bit and add the bit to the upper branch
+            if ((akkuLongC & 0x100000000L) != 0) {
+                akkuLongA += akkuLongB + 0x80000000L;
+                akkuLongC &= 0xFFFFFFFEFFFFFFFFL;
+            } else {
+                akkuLongA += akkuLongB;
+            }
+            //Check for carry by checking the 64th bit
+            if ((akkuLongA & 0x8000000000000000L) != 0) increment(akkuIntA);
+            //Merge and store value
+            bitSetArray[akkuIntA] = akkuLongC | (akkuLongA << 1L);
         }
+    }
+
+    //TODO Doesnt work that way
+    public void multiply(BigBitSet otherSet) {
+        akkuBitSet = otherSet.bitSetArray;
+        akkuIntA = longCount - 1;
+        //Find the smaller bitset
+        if (otherSet.getLongCount() < akkuIntA) akkuIntA = otherSet.getLongCount() - 1;
+        //Iterate over all longs and add them up
+        while (akkuIntA >= 0) {
+            if (bitSetArray[akkuIntA] == 0 || akkuBitSet[akkuIntA] == 0) {
+                akkuIntA--;
+                continue;
+            }
+            //branch
+            akkuLongA = (bitSetArray[akkuIntA] & 0xFFFFFFFF00000000L) >>> 32L;
+            akkuLongB = (akkuBitSet[akkuIntA] & 0xFFFFFFFF00000000L) >>> 32L;
+            akkuLongC = akkuBitSet[akkuIntA] & 0x00000000FFFFFFFFL;
+            akkuLongD = bitSetArray[akkuIntA] & 0x00000000FFFFFFFFL;
+            //multiply lower branch
+            akkuLongC *= akkuLongD;
+            //multiply upper branch
+            akkuLongA *= akkuLongB;
+            //store overflow bits and shit the rest
+            akkuLongB = (akkuLongA & 0xFFFFFFFF00000000L) >>> 32L;
+            //merge branches, adjust upper branch
+            bitSetArray[akkuIntA] = addBinary(akkuLongA << 32L, akkuLongC, akkuIntA);
+            //Add overflow
+            if (akkuIntA + 1 < longCount) {
+                bitSetArray[akkuIntA + 1] = addBinary(bitSetArray[akkuIntA + 1], akkuLongB, akkuIntA + 1);
+            }
+            akkuIntA--;
+        }
+
     }
 
     /*    Conversions     */
@@ -390,4 +439,27 @@ public class BigBitSet implements Comparable<BigBitSet> {
     public BigInteger getBitCount() {
         return bitCount;
     }
+
+    private long addBinary(long a, long b, int index) {
+        //Iterate over all longs and add them up
+        //branch
+        long longA = (a & 0xFFFFFFFF00000000L) >>> 1L;
+        long longB = (b & 0xffffffff00000000L) >>> 1L;
+        long longC = b & 0x00000000FFFFFFFFL;
+        long longD = a & 0x00000000FFFFFFFFL;
+        //add lower branch
+        longC += longD;
+        //Check for carry by checking the 33th bit and add the bit to the upper branch
+        if ((longC & 0x100000000L) != 0) {
+            longA += longB + 0x80000000L;
+            longC &= 0xFFFFFFFEFFFFFFFFL;
+        } else {
+            longA += longB;
+        }
+        //Check for carry by checking the 64th bit
+        if ((longA & 0x8000000000000000L) != 0) increment(index + 1);
+        //Merge and store value
+        return (longC | (longA << 1L));
+    }
+
 }

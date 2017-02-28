@@ -132,10 +132,43 @@ public class BigBitSetTest extends TestCase {
         BigInteger bigInteger = new BigInteger("18446744073709551614");
         bitSet1 = new BigBitSet(4);
         bitSet2 = new BigBitSet(4);
-        bitSet2.setBit(10);//1024
+        bitSet2.setDecimalValue(new BigInteger("1024"));
         bitSet1.setDecimalValue(bigInteger);
         bitSet1.add(bitSet2);
         bigInteger = bigInteger.add(new BigInteger("1024"));
+        assertTrue(bitSet1.toBigInteger().compareTo(bigInteger) == 0);
+    }
+
+    public void testAddLongOverflow() {
+        BigBitSet bitSet1 = new BigBitSet(4);
+        BigBitSet bitSet2 = new BigBitSet(4);
+        BigInteger calc = new BigInteger("0");
+        BigInteger great = BigInteger.valueOf(Long.MAX_VALUE - 10);
+        bitSet2.setDecimalValue(great);
+        for (long i = 0; i < 1000; i++){
+            bitSet1.add(bitSet2);
+            calc = calc.add(great);
+            assertTrue(bitSet1.toBigInteger().compareTo(calc) == 0);
+        }
+
+    }
+
+    public void testMultiply(){
+        BigInteger four = new BigInteger("4");
+        BigBitSet bitSet1 = new BigBitSet(4);
+        BigBitSet bitSet2 = new BigBitSet(4);
+        bitSet1.setBit(1);
+        bitSet2.setBit(1);
+        bitSet1.multiply(bitSet2);
+        assertTrue(bitSet1.toBigInteger().compareTo(four) == 0);
+        //Test first long overflow
+        BigInteger bigInteger = BigInteger.valueOf(Long.MAX_VALUE/2);
+        bitSet1 = new BigBitSet(4);
+        bitSet2 = new BigBitSet(4);
+        bitSet1.setDecimalValue(bigInteger);
+        bitSet2.setDecimalValue(new BigInteger("4"));
+        bitSet1.multiply(bitSet2);
+        bigInteger = bigInteger.multiply(new BigInteger("4"));
         assertTrue(bitSet1.toBigInteger().compareTo(bigInteger) == 0);
     }
 

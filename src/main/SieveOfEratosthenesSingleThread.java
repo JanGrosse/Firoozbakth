@@ -22,6 +22,8 @@ public class SieveOfEratosthenesSingleThread {
         //We set the first two bits, because those are no primes
         this.markers.setBit(0);
         this.markers.setBit(1);
+        //Set start prime
+        prime = new BigBitSet(maxValueBigInteger, false);
 
         this.maxValue = new BigBitSet(maxValueBigInteger, false);
         //TODO Check if BigInteger is bigger than max long and sets long max value
