@@ -17,7 +17,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
     private int bitsPerLong = Long.bitCount(Long.MAX_VALUE) + 1;
     //count of long arrays
     private int longCount = 0;
-    //count of bits
+    //bitCount
     private BigInteger bitCount;
     /*    Performance related    */
     //Save for speed up
@@ -237,6 +237,9 @@ public class BigBitSet implements Comparable<BigBitSet> {
      * @internal akkIntA as counter index
      */
     public void increment(int index) {
+        //Out of bound check
+        if (index < 0) return;
+        //Load akku with inital index
         akkuIntA = index;
         //Increment the longs until there is no more overflow, or the end is reached
         while (++akkuIntA < longCount && (bitSetArray[akkuIntA]++ == -1)) ;
@@ -257,6 +260,9 @@ public class BigBitSet implements Comparable<BigBitSet> {
      * @internal akkIntA as counter index
      */
     public void decrement(int index) {
+        //Out of bound check
+        if (index < 0) return;
+        //Load akku with inital index
         akkuIntA = index;
         //Decrement the longs until there is no more overflow, or the end is reached
         while (--akkuIntA >= 0 && (bitSetArray[akkuIntA]-- == 0)) ;
@@ -272,15 +278,18 @@ public class BigBitSet implements Comparable<BigBitSet> {
     public void add(BigBitSet otherSet) {
         akkuBitSet = otherSet.bitSetArray;
         akkuIntB = longCount;
+        //Find the smaller bitset
         if (otherSet.getLongCount() < akkuIntB) akkuIntB = otherSet.getLongCount();
+        //Iterate over all longs and add them up
         for (akkuIntA = 0; akkuIntA < akkuIntB; akkuIntA++) {
+            //TODO Check if zero and skip if so
+            if (akkuBitSet[akkuIntA] == 0) continue;
+            //Add longs up and safe into temp
             akkuLongA = bitSetArray[akkuIntA] + akkuBitSet[akkuIntA];
+            //TODO Check for an long overflow and increment next long if so
+            if (bitSetArray[akkuIntA] > akkuLongA) increment(akkuIntA + 1);
+            //Save temp into according long
             bitSetArray[akkuIntA] = akkuLongA;
-            //TODO check for overflow
-            if (((bitSetArray[akkuIntA] >>> maxBitIndexLong) + (akkuBitSet[akkuIntA] >>> maxBitIndexLong)) == 1) {
-                bitSetArray[akkuIntA] = akkuLongA;
-                increment(akkuIntA + 1);
-            } else bitSetArray[akkuIntA] = akkuLongA;
         }
     }
 
