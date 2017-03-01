@@ -1,7 +1,6 @@
 package main;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 
 public class BigBitSet implements Comparable<BigBitSet> {
     //Every long will occupy 64 bits(8 bytes). The maximum array length is Integer.MAX_VALUE - 5 (=2147483642). So theoretically almost 17 gibibytes (=64*2147483642 bits) could be stored
@@ -162,7 +161,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
     public boolean getBit(int index) {
         //Save unnecessary shift operations via modulo
         akkuLongA = index & (bitsPerLong - 1);
-        return ((bitSetArray[index / bitsPerLong] >> akkuLongA) & 1) == 1;
+        return ((bitSetArray[index / bitsPerLong] >>> akkuLongA) & 1) == 1;
     }
 
     /**
@@ -175,7 +174,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
         akkuLongA = index & (bitsPerLong - 1);
         //Calculate index
         akkuIntA = (int) (index / bitsPerLong);
-        return ((bitSetArray[akkuIntA] >> akkuLongA) & 1) == 1;
+        return ((bitSetArray[akkuIntA] >>> akkuLongA) & 1) == 1;
     }
 
     /**
@@ -189,7 +188,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
         //Big integer index
         akkuIntA = index.divide(bitsPerLongBigInteger).intValue();
         //Shift mask and set bit
-        return ((bitSetArray[akkuIntA] >> akkuLongA) & 1) == 1;
+        return ((bitSetArray[akkuIntA] >>> akkuLongA) & 1) == 1;
     }
 
     /*    logical operations    */

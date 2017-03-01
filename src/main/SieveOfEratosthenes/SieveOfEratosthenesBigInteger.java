@@ -1,9 +1,11 @@
-package main;
+package main.SieveOfEratosthenes;
+
+import main.BigBitSet;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-public class SieveOfEratosthenesBigInteger {
+public class SieveOfEratosthenesBigInteger implements ISieveofEratosthenes {
     //private BigBitSet bitSet;
     private BigBitSet bitSet;
     private BigInteger maxValue;
@@ -15,7 +17,7 @@ public class SieveOfEratosthenesBigInteger {
         this.maxValue = maxValue;
     }
 
-    public void calculatePrimes() {
+    public void maskPrimes() {
         BigInteger one = new BigInteger("1");
         BigInteger prime = new BigInteger("2");
         BigInteger barrier = sqrt(maxValue);
@@ -35,10 +37,10 @@ public class SieveOfEratosthenesBigInteger {
 
     }
 
-    public ArrayList extractPrimes() {
-        ArrayList<Integer> primes = new ArrayList<>();
-        for (int i = 0; maxValue.compareTo(BigInteger.valueOf(i)) == 1; i++) {
-            if (!bitSet.getBit(i)) primes.add(i);
+    public ArrayList<String> extractPrimes() {
+        ArrayList<String> primes = new ArrayList<>();
+        for (long i = 0; maxValue.compareTo(BigInteger.valueOf(i)) == 1; i++) {
+            if (!bitSet.getBit(i)) primes.add(Long.toString(i));
         }
         return primes;
     }
@@ -46,9 +48,9 @@ public class SieveOfEratosthenesBigInteger {
     public BigInteger sqrt(BigInteger n) {
         BigInteger a = BigInteger.ONE;
         BigInteger b = new BigInteger(n.shiftRight(5).add(new BigInteger("8")).toString());
-        while(b.compareTo(a) >= 0) {
+        while (b.compareTo(a) >= 0) {
             BigInteger mid = new BigInteger(a.add(b).shiftRight(1).toString());
-            if(mid.multiply(mid).compareTo(n) > 0) b = mid.subtract(BigInteger.ONE);
+            if (mid.multiply(mid).compareTo(n) > 0) b = mid.subtract(BigInteger.ONE);
             else a = mid.add(BigInteger.ONE);
         }
         return a.subtract(BigInteger.ONE);

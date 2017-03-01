@@ -2,48 +2,59 @@ package main;
 
 import java.math.BigInteger;
 import java.util.ArrayDeque;
+import java.util.Queue;
+import java.util.concurrent.Semaphore;
 
 public class ThreadMediator {
-    private int threadCount;
+    //Holds all bits of finished threads
     private BigBitSet centralBitSet;
-    private ArrayDeque<SoETask> taskQueue;
+    //Supervises the thread count
+    private Semaphore threadCreationBarrier;
+    //Max amount of threads
+    private int maxThreadCount;
+    //Holds all threads
     private Thread[] threads;
+    //Queue of task which wait on processing
+    private Queue<MultiplierTask> taskQueue;
     //Conatins the maxValue
-    private BigInteger maxValue;
+    private long maxValue;
+    //Contains the last prime for which a task was created
+    private long lastCheckedNumber = 1;
     //Contains the lowest prime of which the multipliers are calculated
-    private BigInteger lowestWorkingPrime = new BigInteger("2");
+    private long lowestWorkingPrime;
+    //Contains the squareroot of the max value, which determines the ending condition
+    private long upperBarrier;
     //Contains the square of the lowest prime
-    private BigInteger calculationBarrier = new BigInteger("4");
+    private long calculationBarrier = 4;
 
-    public ThreadMediator(int threadCount, BigInteger maxValue) {
-        this.threadCount = threadCount;
-        this.threads = new Thread[threadCount];
+    public ThreadMediator(int maxThreadCount, long maxValue) {
+        this.maxThreadCount = maxThreadCount;
+        this.threads = new Thread[maxThreadCount];
+        this.threadCreationBarrier = new Semaphore(maxThreadCount);
         this.maxValue = maxValue;
-        centralBitSet = new BigBitSet(maxValue, true);
+        this.upperBarrier = (long) Math.sqrt(maxValue);
+        centralBitSet = new BigBitSet(BigInteger.valueOf(maxValue), true);
+        centralBitSet.setBit(0);
+        centralBitSet.setBit(1);
         taskQueue = new ArrayDeque<>();
     }
 
     public void start() {
-        distributeTask();
         createTasks();
+        distributeTask();
+        while (!taskQueue.isEmpty() || lastCheckedNumber < )
     }
 
-    //TODO
     private void distributeTask() {
-        for (int i = 0; i < threadCount; i++) {
-           // threads[i] = new Thread().;
+        while (threadCreationBarrier < th){
+
         }
     }
 
     private void createTasks() {
-        BigInteger one = new BigInteger("1");
-        //Initialize with the follow up number of the prime
-        BigInteger i = lowestWorkingPrime.add(one);
-        //while the number is smaller than the barrier; find primes and create tasks
-        while (i.compareTo(calculationBarrier) == -1) {
-            if (!centralBitSet.getBit(i)) {
-                taskQueue.add(new SoETask(i, maxValue));
-            }
+        while (lastCheckedNumber < calculationBarrier) {
+            lastCheckedNumber++;
+            if (!centralBitSet.getBit(lastCheckedNumber)) taskQueue.add(new MultiplierTask(lastCheckedNumber, maxValue));
         }
     }
 }
