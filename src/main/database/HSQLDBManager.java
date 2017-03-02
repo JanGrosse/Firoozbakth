@@ -65,7 +65,6 @@ public enum HSQLDBManager {
                 statement.executeBatch();
                 System.out.println(iteration + " of " + totalSize + "(" + (long) ((iteration * 1.0 / totalSize * 1.0) * 100) + "%) stored.");
                 System.out.println(size + " primes remaining.");
-                statement = connection.prepareStatement("INSERT INTO primes (PRIME_VALUE, DATE_FOUND) VALUES (?, ?);");
             }
             statement.closeOnCompletion();
         } catch (SQLException e) {
@@ -111,3 +110,4 @@ public enum HSQLDBManager {
         execute("SHUTDOWN");
     }
 }
+

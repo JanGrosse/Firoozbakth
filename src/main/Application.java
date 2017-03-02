@@ -3,21 +3,22 @@ package main;
 import main.SieveOfEratosthenes.SimpleSieveOfEratosthenes;
 import main.database.HSQLDBManager;
 
+import java.util.ArrayList;
+
 public class Application {
     public static void main(String... args) {
         HSQLDBManager database = HSQLDBManager.instance;
-        //database.startup();i
-        //database.reset();
-        SimpleSieveOfEratosthenes soe = new SimpleSieveOfEratosthenes(1000063);
-        System.out.println("--- Finished Startup --> Start sieve ---");
+        System.out.println("--- Startup database ---");
+        database.startup();
+        database.reset();
+        SimpleSieveOfEratosthenes soe = new SimpleSieveOfEratosthenes(100000000);
+        System.out.println("--- Finished startup --> Start sieve ---");
         soe.maskPrimes();
         System.out.println("--- Finished sieve --> Start extracting primes ---");
-        System.out.println(soe.getBitSet().toString());
-        //ArrayList<String> primes = soe.extractPrimes();
-        //System.out.println("--- Finished extracting primes --> Start storing primes ---");
-       // database.storePrimes(primes);
-       // database.outputPrimes(0);
-        //database.shutdown();
+        ArrayList<String> primes = soe.extractPrimes();
+        System.out.println("--- Finished extracting primes --> Start storing primes ---");
+        database.storePrimes(primes);
+        database.shutdown();
         System.out.println("Finished!");
     }
 }

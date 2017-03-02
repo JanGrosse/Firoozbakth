@@ -35,6 +35,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
     private long[] akkuBitSet;
 
     public BigBitSet(BigInteger value, boolean bitsNotStorable) {
+        if (value.signum() == -1) throw new Error("Max value is negative!");
         if (bitsNotStorable) {
             int longCount;
             BigInteger sixtyFour = new BigInteger("64");
@@ -48,9 +49,21 @@ public class BigBitSet implements Comparable<BigBitSet> {
             longCount++;
             initArray(longCount);
         } else {
-            if (value.signum() == -1) throw new Error("Max value is negative!");
             initArrayViaMaxValue(value);
         }
+    }
+
+    public BigBitSet(long bits) {
+        if (bits < 0) throw new Error("Max value is negative!");
+        int longCount;
+        //maximum array length is Integer.MAX_VALUE - 5
+        if ((Integer.MAX_VALUE - 5) * 64L > bits) {
+            throw new Error("You can not store that many bits! Amount of bits must be smaller than 64*(2^32 - 5)\n Also consider max heap size!");
+        }
+        //Calculate needed longs
+        longCount = (int) bits / 64;
+        longCount++;
+        initArray(longCount);
     }
 
     /**
@@ -79,6 +92,16 @@ public class BigBitSet implements Comparable<BigBitSet> {
                 bitSetArray[i] = (bitSetArray[i] << 8) + (bytes[j] & 0xff);
             }
             valueToSet = valueToSet.divide(baseDecimal);
+        }
+    }
+
+    /**
+     * All bits will be set to zero
+     */
+    public void clear() {
+        akkuIntA = -1;
+        while (++akkuIntA < longCount) {
+            bitSetArray[akkuIntA] = 0;
         }
     }
 
@@ -307,39 +330,39 @@ public class BigBitSet implements Comparable<BigBitSet> {
         }
     }
 
-    //TODO Doesnt work that way
-    public void multiply(BigBitSet otherSet) {
-        akkuBitSet = otherSet.bitSetArray;
-        akkuIntA = longCount - 1;
-        //Find the smaller bitset
-        if (otherSet.getLongCount() < akkuIntA) akkuIntA = otherSet.getLongCount() - 1;
-        //Iterate over all longs and add them up
-        while (akkuIntA >= 0) {
-            if (bitSetArray[akkuIntA] == 0 || akkuBitSet[akkuIntA] == 0) {
-                akkuIntA--;
-                continue;
-            }
-            //branch
-            akkuLongA = (bitSetArray[akkuIntA] & 0xFFFFFFFF00000000L) >>> 32L;
-            akkuLongB = (akkuBitSet[akkuIntA] & 0xFFFFFFFF00000000L) >>> 32L;
-            akkuLongC = akkuBitSet[akkuIntA] & 0x00000000FFFFFFFFL;
-            akkuLongD = bitSetArray[akkuIntA] & 0x00000000FFFFFFFFL;
-            //multiply lower branch
-            akkuLongC *= akkuLongD;
-            //multiply upper branch
-            akkuLongA *= akkuLongB;
-            //store overflow bits and shit the rest
-            akkuLongB = (akkuLongA & 0xFFFFFFFF00000000L) >>> 32L;
-            //merge branches, adjust upper branch
-            bitSetArray[akkuIntA] = addBinary(akkuLongA << 32L, akkuLongC, akkuIntA);
-            //Add overflow
-            if (akkuIntA + 1 < longCount) {
-                bitSetArray[akkuIntA + 1] = addBinary(bitSetArray[akkuIntA + 1], akkuLongB, akkuIntA + 1);
-            }
-            akkuIntA--;
-        }
-
-    }
+//    //TODO Doesnt work that way
+//    public void multiply(BigBitSet otherSet) {
+//        akkuBitSet = otherSet.bitSetArray;
+//        akkuIntA = longCount - 1;
+//        //Find the smaller bitset
+//        if (otherSet.getLongCount() < akkuIntA) akkuIntA = otherSet.getLongCount() - 1;
+//        //Iterate over all longs and add them up
+//        while (akkuIntA >= 0) {
+//            if (bitSetArray[akkuIntA] == 0 || akkuBitSet[akkuIntA] == 0) {
+//                akkuIntA--;
+//                continue;
+//            }
+//            //branch
+//            akkuLongA = (bitSetArray[akkuIntA] & 0xFFFFFFFF00000000L) >>> 32L;
+//            akkuLongB = (akkuBitSet[akkuIntA] & 0xFFFFFFFF00000000L) >>> 32L;
+//            akkuLongC = akkuBitSet[akkuIntA] & 0x00000000FFFFFFFFL;
+//            akkuLongD = bitSetArray[akkuIntA] & 0x00000000FFFFFFFFL;
+//            //multiply lower branch
+//            akkuLongC *= akkuLongD;
+//            //multiply upper branch
+//            akkuLongA *= akkuLongB;
+//            //store overflow bits and shit the rest
+//            akkuLongB = (akkuLongA & 0xFFFFFFFF00000000L) >>> 32L;
+//            //merge branches, adjust upper branch
+//            bitSetArray[akkuIntA] = addBinary(akkuLongA << 32L, akkuLongC, akkuIntA);
+//            //Add overflow
+//            if (akkuIntA + 1 < longCount) {
+//                bitSetArray[akkuIntA + 1] = addBinary(bitSetArray[akkuIntA + 1], akkuLongB, akkuIntA + 1);
+//            }
+//            akkuIntA--;
+//        }
+//
+//    }
 
     /*    Conversions     */
 
@@ -460,5 +483,4 @@ public class BigBitSet implements Comparable<BigBitSet> {
         //Merge and store value
         return (longC | (longA << 1L));
     }
-
 }
