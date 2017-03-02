@@ -63,8 +63,7 @@ public enum HSQLDBManager {
                 size = primes.size();
                 statement.executeBatch();
                 connection.commit();
-                System.out.println(iteration + " of " + totalSize + "(" + (long) ((iteration * 1.0 / totalSize * 1.0) * 100) + "%) stored.");
-                System.out.println(size + " primes remaining.");
+                System.out.println(iteration + " of " + totalSize + "(" + (short) ((iteration * 1.0 / totalSize * 1.0) * 100) + "%) stored.");
             }
             statement.closeOnCompletion();
         } catch (SQLException e) {
@@ -88,6 +87,26 @@ public enum HSQLDBManager {
         }
     }
 
+    public synchronized long[] getPrimes(long limit, long start) {
+        ArrayList<BigInteger> outList = new ArrayList<>();
+        ResultSet result;
+        long[] primes;
+        try {
+            result = connection.createStatement().executeQuery("SELECT COUNT(PRIME_ID) AS amount FROM PRIMES " + (limit == 0 ? "" : "LIMIT " + limit) + (start == 0 && limit != 0 ? "" : " OFFSET " + start));
+            result.next();
+            primes = new long[result.getInt("amount")];
+            result = connection.createStatement().executeQuery("SELECT * FROM PRIMES " + (limit == 0 ? "" : "LIMIT " + limit) + (start == 0 && limit != 0 ? "" : " OFFSET " + start));
+            for (int i = 0; i < primes.length; i++) {
+                result.next();
+                primes[i] = result.getLong("PRIME_VALUE");
+            }
+            return primes;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public void dropTables() {
         System.out.println("--- DROP TABLES ---");
         execute("DROP TABLE PRIMES");
@@ -99,8 +118,13 @@ public enum HSQLDBManager {
         execute("CREATE CACHED TABLE PRIMES\n" +
                 "(\n" +
                 "    PRIME_ID INTEGER PRIMARY KEY NOT NULL IDENTITY,\n" +
-                "    PRIME_VALUE BIGINT ,\n" +
+                "    PRIME_VALUE BIGINT,\n" +
                 "    DATE_FOUND CHAR(20) \n" +
+                ");\n");
+        execute("CREATE CACHED TABLE FIROOZBAKHT_CONJECTURE\n" +
+                "(\n" +
+                "    PRIME_ID INTEGER PRIMARY KEY NOT NULL IDENTITY,\n" +
+                "    VALUE CHAR(50),\n" +
                 ");\n");
         System.out.println("--- FINISHED CREATE TABLES ---");
     }

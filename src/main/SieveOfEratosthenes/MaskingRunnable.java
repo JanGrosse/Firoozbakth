@@ -35,15 +35,15 @@ public class MaskingRunnable extends Thread implements Comparable<MaskingRunnabl
     @Override
     public void run() {
         try {
-            while (mediator.running || !this.waitingTasks.isEmpty()) {
+            while (true) {
                 this.bitSet.clear();
-                System.out.println("t"+id+" waiting");
                 this.startPrime = this.waitingTasks.take();
-                System.out.println("t"+id+" took "+ startPrime);
+                if (startPrime == 0) break;
                 mediator.setTaskActive(this.startPrime);
                 doMasking();
                 mediator.callback(this);
             }
+            System.out.println("Thread "+ id + " finished!");
             this.mediator.checkout();
         } catch (InterruptedException | BrokenBarrierException e) {
             e.printStackTrace();

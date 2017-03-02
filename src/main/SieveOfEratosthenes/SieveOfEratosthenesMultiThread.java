@@ -16,13 +16,15 @@ public class SieveOfEratosthenesMultiThread implements ISieveofEratosthenes {
     //For waiting the last threads to finish
     private CyclicBarrier finalBarrier;
     //Informing the threads to shut down after they finished their task
-    volatile boolean running;
+    private boolean running;
     //Holds all bits of finished threads
     private BigBitSet centralBitSet;
     //Max amount of threads
     private int maxThreadCount;
     //Holds all currently working tasks
     private ArrayList<Long> activeTasks;
+    //thw highest finished multiplier task
+    private long finishedTask;
     //Queue of task which wait on processing
     private final BlockingQueue<Long> waitingTasks;
     //Conatins the maxValue
@@ -37,7 +39,7 @@ public class SieveOfEratosthenesMultiThread implements ISieveofEratosthenes {
     private long calculationBarrier;
 
     public SieveOfEratosthenesMultiThread(int maxThreadCount, long maxValue) {
-        this.finalBarrier = new CyclicBarrier(maxThreadCount);
+        this.finalBarrier = new CyclicBarrier(maxThreadCount + 1);
         this.running = true;
         this.centralBitSet = new BigBitSet(BigInteger.valueOf(maxValue), true);
         this.centralBitSet.setBit(0);//0 is not a prime
@@ -52,12 +54,8 @@ public class SieveOfEratosthenesMultiThread implements ISieveofEratosthenes {
 
     private void createThreads() {
         synchronized (lock) {
-            MaskingRunnable[] threads = new MaskingRunnable[maxThreadCount];
             for (int i = 0; i < maxThreadCount; i++) {
-                threads[i] = new MaskingRunnable(this.maxValue, this, this.waitingTasks);
-            }
-            for (int i = 0; i < maxThreadCount; i++) {
-                threads[2].run();
+                new MaskingRunnable(this.maxValue, this, this.waitingTasks).start();
             }
         }
     }
@@ -73,17 +71,24 @@ public class SieveOfEratosthenesMultiThread implements ISieveofEratosthenes {
 
     public void callback(MaskingRunnable task) {
         synchronized (lock) {
-            System.out.println("Finished " + task.getStartPrime());
             //Merge BitSets
             this.centralBitSet.binaryOr(task.getBitSet());
-            System.out.println(this.centralBitSet);
             //Remove from list
             activeTasks.remove(task.getStartPrime());
+            //If waiting for finishing
+            if (!running) return;
             //Check if new Tasks can be created
-            if (task.getStartPrime() == lowestWorkingPrime && this.running && !activeTasks.isEmpty()) {
-                //Determine new lowest working thread
-                Collections.sort(activeTasks);
-                changeCalculationBarrier(activeTasks.get(0));
+            if (task.getStartPrime() == lowestWorkingPrime) {
+                if (!activeTasks.isEmpty()) {
+                    //Determine new lowest working thread
+                    Collections.sort(activeTasks);
+                    changeCalculationBarrier(activeTasks.get(0));
+                } else {
+                    changeCalculationBarrier(finishedTask);
+                }
+            } else {
+                long prime = task.getStartPrime();
+                if (prime > finishedTask) finishedTask = prime;
             }
         }
     }
@@ -94,38 +99,33 @@ public class SieveOfEratosthenesMultiThread implements ISieveofEratosthenes {
         createTasks();
     }
 
-    private void end() {
-        System.out.println("Finished!");
-    }
-
-    private void createInitialTasks() {
-        this.calculationBarrier = 4;
-        this.waitingTasks.add(2L);
-        this.waitingTasks.add(3L);
-    }
-
     private void createTasks() {
         while (lastCheckedNumber < calculationBarrier && lastCheckedNumber < upperBarrier) {
             lastCheckedNumber++;
             if (!centralBitSet.getBit(lastCheckedNumber))
                 waitingTasks.add(lastCheckedNumber);
         }
-        if (lastCheckedNumber == upperBarrier)
-            this.running = false;
+        if (lastCheckedNumber == upperBarrier) initEnd();
+    }
+
+    private void initEnd() {
+        this.running = false;
+        //Add death message
+        for (int i = 0; i < maxThreadCount; i++) {
+            waitingTasks.add(0L);
+        }
     }
 
     public void checkout() throws BrokenBarrierException, InterruptedException {
-        System.out.println("Checked out!");
         this.finalBarrier.await();
     }
 
     @Override
     public void maskPrimes() {
         try {
-            createInitialTasks();
+            changeCalculationBarrier(2L);
             createThreads();
             this.finalBarrier.await();
-            this.end();
         } catch (InterruptedException | BrokenBarrierException e) {
             e.printStackTrace();
         }
