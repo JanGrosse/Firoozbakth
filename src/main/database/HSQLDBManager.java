@@ -1,13 +1,12 @@
 package main.database;
 
-import org.hsqldb.result.Result;
-
 import java.math.BigInteger;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public enum HSQLDBManager {
     instance;
@@ -63,6 +62,7 @@ public enum HSQLDBManager {
                 primes = primes.subList(i, size);
                 size = primes.size();
                 statement.executeBatch();
+                connection.commit();
                 System.out.println(iteration + " of " + totalSize + "(" + (long) ((iteration * 1.0 / totalSize * 1.0) * 100) + "%) stored.");
                 System.out.println(size + " primes remaining.");
             }
@@ -82,7 +82,7 @@ public enum HSQLDBManager {
             }
             ResultSet res = connection.createStatement().executeQuery("SELECT COUNT(PRIME_ID) AS cou FROM PRIMES");
             res.next();
-            System.out.println(res.getString("cou") + " Entries!");
+            System.out.println("Entries: " + res.getString("cou"));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -96,7 +96,7 @@ public enum HSQLDBManager {
 
     public void createTables() {
         System.out.println("--- CREATE TABLES ---");
-        execute("CREATE TABLE PRIMES\n" +
+        execute("CREATE CACHED TABLE PRIMES\n" +
                 "(\n" +
                 "    PRIME_ID INTEGER PRIMARY KEY NOT NULL IDENTITY,\n" +
                 "    PRIME_VALUE BIGINT ,\n" +

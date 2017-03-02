@@ -56,8 +56,10 @@ public class BigBitSet implements Comparable<BigBitSet> {
     public BigBitSet(long bits) {
         if (bits < 0) throw new Error("Max value is negative!");
         int longCount;
+        BigInteger sixtyFour = new BigInteger("64");
+        BigInteger maxIntVal = BigInteger.valueOf(Integer.MAX_VALUE - 5);
         //maximum array length is Integer.MAX_VALUE - 5
-        if ((Integer.MAX_VALUE - 5) * 64L > bits) {
+        if (maxIntVal.multiply(sixtyFour).compareTo(BigInteger.valueOf(bits)) != 1) {
             throw new Error("You can not store that many bits! Amount of bits must be smaller than 64*(2^32 - 5)\n Also consider max heap size!");
         }
         //Calculate needed longs
@@ -330,6 +332,26 @@ public class BigBitSet implements Comparable<BigBitSet> {
         }
     }
 
+    public long NumberOfSetBits()
+    {
+        akkuIntA = -1;
+        akkuLongA = 0;
+        while (++akkuIntA < longCount) {
+            akkuLongA += Long.bitCount(akkuIntA);
+        }
+        return akkuLongA;
+    }
+
+    public long NumberOfUnsetBits()
+    {
+        akkuIntA = -1;
+        akkuLongA = 0;
+        while (++akkuIntA < longCount) {
+            akkuLongA += Long.bitCount(akkuIntA) - 64;
+        }
+        return akkuLongA;
+    }
+
 //    //TODO Doesnt work that way
 //    public void multiply(BigBitSet otherSet) {
 //        akkuBitSet = otherSet.bitSetArray;
@@ -462,25 +484,5 @@ public class BigBitSet implements Comparable<BigBitSet> {
         return bitCount;
     }
 
-    private long addBinary(long a, long b, int index) {
-        //Iterate over all longs and add them up
-        //branch
-        long longA = (a & 0xFFFFFFFF00000000L) >>> 1L;
-        long longB = (b & 0xffffffff00000000L) >>> 1L;
-        long longC = b & 0x00000000FFFFFFFFL;
-        long longD = a & 0x00000000FFFFFFFFL;
-        //add lower branch
-        longC += longD;
-        //Check for carry by checking the 33th bit and add the bit to the upper branch
-        if ((longC & 0x100000000L) != 0) {
-            longA += longB + 0x80000000L;
-            longC &= 0xFFFFFFFEFFFFFFFFL;
-        } else {
-            longA += longB;
-        }
-        //Check for carry by checking the 64th bit
-        if ((longA & 0x8000000000000000L) != 0) increment(index + 1);
-        //Merge and store value
-        return (longC | (longA << 1L));
-    }
+
 }
