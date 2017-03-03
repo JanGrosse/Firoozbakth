@@ -1,5 +1,6 @@
-package main.Firoozbakht;
+package main;
 
+import main.Firoozbakht.FiroozbakhtMultithreading;
 import main.database.HSQLDBManager;
 
 public class AppMultithreadFirooz {

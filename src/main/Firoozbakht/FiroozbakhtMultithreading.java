@@ -7,7 +7,7 @@ import java.util.concurrent.CyclicBarrier;
 public class FiroozbakhtMultithreading implements Firoozbakht {
     private ArrayList<Long> primes;
     private FiroozbakhtRunnable[] threads;
-    private double[] results;
+    private double[] tempResults;
     private int length;
     private int threadLoad;
     private boolean isProcessed = false;
@@ -17,7 +17,7 @@ public class FiroozbakhtMultithreading implements Firoozbakht {
     public FiroozbakhtMultithreading(long[] primes, int threadCount) {
         this.primes = toArrayList(primes);
         this.length = primes.length;
-        this.results = new double[length];
+        this.tempResults = new double[length];
         this.threadCount = threadCount;
         this.finalBarrier = new CyclicBarrier(threadCount + 1);
         this.threads = new FiroozbakhtRunnable[threadCount];
@@ -55,7 +55,7 @@ public class FiroozbakhtMultithreading implements Firoozbakht {
         for (FiroozbakhtRunnable thread : this.threads) {
             temp = thread.getResults();
             for (double d : temp) {
-                results[index++] = d;
+                tempResults[index++] = d;
             }
         }
         isProcessed = true;
@@ -67,21 +67,25 @@ public class FiroozbakhtMultithreading implements Firoozbakht {
         }
     }
 
-    public long checkFalsify() {
+    public void checkFalsify() {
         if (!isProcessed) throw new Error("You have to process the primes first!");
         int i;
-        for (i = 1; i < results.length; i++) {
-            if (results[i - 1] <= results[i]) {
-                System.out.println("Firoozbakht was falsified for prime " + (i - 1) + ":" + results[i - 1] + " and prime " + (i) + ":" + results[i]);
-                return i;
+        for (i = 1; i < tempResults.length; i++) {
+            if (tempResults[i - 1] <= tempResults[i]) {
+                System.out.println("Firoozbakht was falsified for prime " + (i - 1) + ":" + tempResults[i - 1] + " and prime " + (i) + ":" + tempResults[i]);
             }
         }
         System.out.println("Firoozbakht could not be falsified!");
-        System.out.println(results.length + " primes were checked!");
-        return 0;
+        System.out.println(tempResults.length + " primes were checked!");
     }
 
-    public double[] getResults() {
-        return results;
+    @Override
+    public ArrayList<String> getFiroozbakhtResults() {
+        ArrayList<String> firoozs = new ArrayList<>();
+        for (int i = 0; i < length; i++) {
+            firoozs.add(Double.toString(tempResults[i]));
+        }
+        return firoozs;
     }
+
 }

@@ -11,7 +11,7 @@ public class AppMultithreadSoE {
         System.out.println("--- Startup database ---");
         database.startup();
         database.reset();
-        SieveOfEratosthenesMultiThread mediator = new SieveOfEratosthenesMultiThread(8, 100000000);
+        SieveOfEratosthenesMultiThread mediator = new SieveOfEratosthenesMultiThread(8, 1000);
         System.out.println("--- Finished startup --> Start sieve ---");
         mediator.maskPrimes();
         System.out.println("--- Finished sieve --> Start extracting primes ---");

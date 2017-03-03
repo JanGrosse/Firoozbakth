@@ -5,8 +5,7 @@ import java.util.ArrayList;
 public interface Firoozbakht {
     public void processPrimes();
 
-    public long checkFalsify();
+    public void checkFalsify();
 
-    public double[] getResults();
-
+    public ArrayList<String> getFiroozbakhtResults();
 }

@@ -3,6 +3,8 @@ package main;
 import main.Firoozbakht.SimpleFiroozbakht;
 import main.database.HSQLDBManager;
 
+import java.util.ArrayList;
+
 public class AppFiroozbakht {
     public static void main(String[] args) {
         HSQLDBManager database = HSQLDBManager.instance;
@@ -15,5 +17,8 @@ public class AppFiroozbakht {
         fb.processPrimes();
         System.out.println("--- Finished processing --> Start checking ---");
         fb.checkFalsify();
+        System.out.println("--- Finished checking --> Start storing ---");
+        ArrayList<String> res = fb.getFiroozbakhtResults();
+        database.storeFiroozbakht(res);
     }
 }
