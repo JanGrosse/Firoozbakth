@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-public class FiroozbakhtMultithreading implements Firoozbakht {
+public class FiroozbakhtMultithreading implements IFiroozbakht {
     private ArrayList<Long> primes;
     private FiroozbakhtRunnable[] threads;
     private double[] tempResults;

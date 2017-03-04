@@ -1,7 +1,6 @@
 package main.database;
 
-import javafx.util.Pair;
-import main.FiroozPrimesPair;
+import main.ArrayPair;
 
 import java.math.BigInteger;
 import java.sql.*;
@@ -46,30 +45,6 @@ public enum HSQLDBManager {
         }
     }
 
-    public synchronized void storePrimeGaps(List<String> gaps) {
-        try {
-            long iteration = 0;
-            int i, size, totalSize;
-            size = totalSize = gaps.size();
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO PRIME_GAPS (VALUE) VALUES (?);");
-            while (size > 0) {
-                for (i = 0; i < 100000 && i < size; i++) {
-                    iteration++;
-                    statement.setString(1, gaps.get(i));
-                    statement.addBatch();
-                }
-                gaps = gaps.subList(i, size);
-                size = gaps.size();
-                statement.executeBatch();
-                connection.commit();
-                System.out.println(iteration + " of " + totalSize + "(" + (short) ((iteration * 1.0 / totalSize * 1.0) * 100) + "%) stored.");
-            }
-            statement.closeOnCompletion();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public synchronized void storeFiroozbakht(List<String> firoozbakhts) {
         try {
             long iteration = 0;
@@ -94,21 +69,75 @@ public enum HSQLDBManager {
         }
     }
 
-    public synchronized FiroozPrimesPair getFiroozbakhtPrimePairs(long limit, long start) {
+    public synchronized ArrayPair<Long, Double> getFiroozbakhtPrimePairs(int limit, int offset) {
         try {
             int length, iteration = 0;
-            ResultSet count = connection.createStatement().executeQuery("SELECT COUNT(p.PRIME_ID) AS cou FROM FIROOZBAKHT_CONJECTURE f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID " + (limit == 0 ? "" : ("LIMIT " + limit)) + (start == 0 && limit != 0 ? "" : (" OFFSET " + start)));
-            count.next();
-            length = count.getInt("cou");
-            double[] firoozs = new double[length];
-            long[] primes = new long[length];
-            ResultSet result = connection.createStatement().executeQuery("SELECT p.PRIME_VALUE, f.VALUE FROM FIROOZBAKHT_CONJECTURE f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID "  + (limit == 0 ? "" : ("LIMIT " + limit)) + (start == 0 && limit != 0 ? "" : (" OFFSET " + start)));
+            if (limit == 0){
+                ResultSet count = connection.createStatement().executeQuery("SELECT COUNT(p.PRIME_ID) AS cou FROM FIROOZBAKHT_CONJECTURE f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID LIMIT " + limit + " OFFSET " + offset);
+                count.next();
+                length = count.getInt("cou") - offset;
+            } else {
+                length = limit;
+            }
+            Double[] firoozs = new Double[length];
+            Long[] primes = new Long[length];
+            ResultSet result = connection.createStatement().executeQuery("SELECT p.PRIME_VALUE, f.VALUE FROM FIROOZBAKHT_CONJECTURE f, PRIMES p WHERE WHERE p.PRIME_ID = f.PRIME_ID LIMIT " + limit + " OFFSET " + offset);
             while (result.next()) {
                 firoozs[iteration] = result.getDouble(2);
                 primes[iteration] = result.getLong(1);
                 iteration++;
             }
-            return new FiroozPrimesPair(primes, firoozs);
+            return new ArrayPair<>(primes, firoozs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public synchronized void storePrimeGaps(List<String> gaps) {
+        try {
+            long iteration = 0;
+            int i, size, totalSize;
+            size = totalSize = gaps.size();
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO PRIME_GAPS (VALUE) VALUES (?);");
+            while (size > 0) {
+                for (i = 0; i < 100000 && i < size; i++) {
+                    iteration++;
+                    statement.setString(1, gaps.get(i));
+                    statement.addBatch();
+                }
+                gaps = gaps.subList(i, size);
+                size = gaps.size();
+                statement.executeBatch();
+                connection.commit();
+                System.out.println(iteration + " of " + totalSize + "(" + (short) ((iteration * 1.0 / totalSize * 1.0) * 100) + "%) stored.");
+            }
+            statement.closeOnCompletion();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized ArrayPair<Long, Long> getPrimePrimeGapPairs(int limit, int offset) {
+        try {
+            int length, iteration = 0;
+            if (limit == 0){
+                ResultSet count = connection.createStatement().executeQuery("SELECT  COUNT(p.PRIME_ID) AS cou FROM PRIME_GAPS f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID LIMIT " + limit + " OFFSET " + offset);
+                count.next();
+                length = count.getInt("cou") - offset;
+            } else {
+                length = limit;
+            }
+            Long[] primeGaps = new Long[length];
+            Long[] primes = new Long[length];
+            ResultSet result = connection.createStatement().executeQuery("SELECT p.PRIME_VALUE, f.VALUE FROM PRIME_GAPS f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID LIMIT " + limit + " OFFSET " + offset);
+            ;
+            while (result.next()) {
+                primes[iteration] = result.getLong(1);
+                primeGaps[iteration] = result.getLong(2);
+                iteration++;
+            }
+            return new ArrayPair<>(primes, primeGaps);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -142,11 +171,11 @@ public enum HSQLDBManager {
         }
     }
 
-    public synchronized void outputPrimes(long limit) {
+    public synchronized void outputPrimes(long limit, long offset) {
         ArrayList<BigInteger> outList = new ArrayList<>();
         try {
             Statement statement = connection.createStatement();
-            ResultSet result = statement.executeQuery("SELECT * FROM PRIMES " + (limit == 0 ? "" : "LIMIT " + limit));
+            ResultSet result = statement.executeQuery("SELECT * FROM PRIMES LIMIT " + limit + " OFFSET " + offset);
             while (result.next()) {
                 System.out.print(result.getString("PRIME_VALUE") + ", ");
             }
@@ -158,15 +187,20 @@ public enum HSQLDBManager {
         }
     }
 
-    public synchronized long[] getPrimes(long limit, long start) {
-        ArrayList<BigInteger> outList = new ArrayList<>();
+    public synchronized long[] getPrimes(int limit, int offset) {
         ResultSet result;
         long[] primes;
+        int length;
         try {
-            result = connection.createStatement().executeQuery("SELECT COUNT(PRIME_ID) AS amount FROM PRIMES " + (limit == 0 ? "" : "LIMIT " + limit) + (start == 0 && limit != 0 ? "" : " OFFSET " + start));
-            result.next();
-            primes = new long[result.getInt("amount")];
-            result = connection.createStatement().executeQuery("SELECT * FROM PRIMES " + (limit == 0 ? "" : "LIMIT " + limit) + (start == 0 && limit != 0 ? "" : " OFFSET " + start));
+            if (limit == 0){
+                ResultSet count = connection.createStatement().executeQuery("SELECT COUNT(PRIME_ID) AS cou FROM PRIMES LIMIT " + limit + " OFFSET " + offset);
+                count.next();
+                length = count.getInt("cou") - offset;
+            } else {
+                length = limit;
+            }
+            primes = new long[length];
+            result = connection.createStatement().executeQuery("SELECT * FROM PRIMES LIMIT " + limit + " OFFSET " + offset);
             for (int i = 0; i < primes.length; i++) {
                 result.next();
                 primes[i] = result.getLong("PRIME_VALUE");
@@ -180,26 +214,26 @@ public enum HSQLDBManager {
 
     public synchronized void dropTables() {
         System.out.println("--- DROP TABLES ---");
-        execute("DROP TABLE PRIMES");
-        execute("DROP TABLE FIROOZBAKHT_CONJECTURE");
-        execute("DROP TABLE PRIME_GAPS");
+        execute("DROP TABLE PUBLIC.PRIMES");
+        execute("DROP TABLE PUBLIC.FIROOZBAKHT_CONJECTURE");
+        execute("DROP TABLE PUBLIC.PRIME_GAPS");
         System.out.println("--- FINISHED DROP TABLES ---");
     }
 
     public synchronized void createTables() {
         System.out.println("--- CREATE TABLES ---");
-        execute("CREATE CACHED TABLE PRIMES\n" +
+        execute("CREATE CACHED TABLE PUBLIC.PRIMES\n" +
                 "(\n" +
                 "    PRIME_ID INTEGER PRIMARY KEY NOT NULL IDENTITY,\n" +
                 "    PRIME_VALUE BIGINT,\n" +
                 "    DATE_FOUND CHAR(20) \n" +
                 ");\n");
-        execute("CREATE CACHED TABLE FIROOZBAKHT_CONJECTURE\n" +
+        execute("CREATE CACHED TABLE PUBLIC.FIROOZBAKHT_CONJECTURE\n" +
                 "(\n" +
                 "    PRIME_ID INTEGER PRIMARY KEY NOT NULL IDENTITY,\n" +
                 "    VALUE CHAR(50)\n" +
                 ");\n");
-        execute("CREATE CACHED TABLE PRIME_GAPS\n" +
+        execute("CREATE CACHED TABLE PUBLIC.PRIME_GAPS\n" +
                 "(\n" +
                 "    PRIME_ID INTEGER PRIMARY KEY NOT NULL IDENTITY,\n" +
                 "    VALUE BIGINT\n" +

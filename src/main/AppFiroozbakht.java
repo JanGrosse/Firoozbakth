@@ -20,5 +20,7 @@ public class AppFiroozbakht {
         System.out.println("--- Finished checking --> Start storing ---");
         ArrayList<String> res = fb.getFiroozbakhtResults();
         database.storeFiroozbakht(res);
+        database.shutdown();
+        System.out.println("--- Finished ---");
     }
 }

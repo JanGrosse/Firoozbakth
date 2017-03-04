@@ -46,7 +46,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
             }
             //Calculate needed longs
             longCount = value.divide(sixtyFour).intValue();
-            longCount++;
+            if (value.mod(sixtyFour).compareTo(BigInteger.ZERO) != 0) longCount++;
             initArray(longCount);
         } else {
             initArrayViaMaxValue(value);
@@ -332,8 +332,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
         }
     }
 
-    public long NumberOfSetBits()
-    {
+    public long NumberOfSetBits() {
         akkuIntA = -1;
         akkuLongA = 0;
         while (++akkuIntA < longCount) {
@@ -342,8 +341,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
         return akkuLongA;
     }
 
-    public long NumberOfUnsetBits()
-    {
+    public long NumberOfUnsetBits() {
         akkuIntA = -1;
         akkuLongA = 0;
         while (++akkuIntA < longCount) {

@@ -1,6 +1,7 @@
-package main;
+package main.test;
 
 import junit.framework.TestCase;
+import main.BigBitSet;
 
 import java.math.BigInteger;
 

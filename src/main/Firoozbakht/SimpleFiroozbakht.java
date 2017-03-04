@@ -2,7 +2,7 @@ package main.Firoozbakht;
 
 import java.util.ArrayList;
 
-public class SimpleFiroozbakht implements Firoozbakht {
+public class SimpleFiroozbakht implements IFiroozbakht {
     private long[] primes;
     private double[] results;
     private boolean isProcessed = false;

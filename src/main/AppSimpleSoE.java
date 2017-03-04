@@ -19,7 +19,7 @@ public class AppSimpleSoE {
         System.out.println("--- Finished extracting primes --> Start storing primes ---");
         database.storePrimes(primes);
         database.shutdown();
-        System.out.println("Finished!");
+        System.out.println("--- Finished ---");
     }
 }
 
