@@ -1,5 +1,7 @@
 package main.Firoozbakht;
 
+import main.Configuration;
+
 import java.util.ArrayList;
 
 public class SimpleFiroozbakht implements IFiroozbakht {
@@ -14,6 +16,9 @@ public class SimpleFiroozbakht implements IFiroozbakht {
         this.results = new double[this.length];
     }
 
+    public SimpleFiroozbakht() {
+        this(Configuration.instance.hsqldbManager.getPrimes(0, 0));
+    }
 
     @Override
     public void processPrimes() {

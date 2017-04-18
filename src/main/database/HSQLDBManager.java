@@ -1,6 +1,7 @@
 package main.database;
 
-import main.ArrayPair;
+import main.Configuration;
+import main.DataStructures.ArrayPair;
 
 import java.math.BigInteger;
 import java.sql.*;
@@ -142,6 +143,10 @@ public enum HSQLDBManager {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public synchronized ArrayPair<Long, Long> getPrimePrimeGapPairs() {
+        return getPrimePrimeGapPairs(Configuration.GUIMaximumPrimeGapsToShow, Configuration.GUISkipNPrimes);
     }
 
     public synchronized void storePrimes(List<String> primes) {

@@ -1,4 +1,4 @@
-package main;
+package main.DataStructures;
 
 import java.math.BigInteger;
 

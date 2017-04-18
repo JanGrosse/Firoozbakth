@@ -1,4 +1,4 @@
-package main;
+package main.DataStructures;
 
 public class ArrayPair<A, B> {
     private A[] firstArray;

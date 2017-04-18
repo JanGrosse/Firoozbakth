@@ -1,6 +1,6 @@
 package main.SieveOfEratosthenes;
 
-import main.BigBitSet;
+import main.DataStructures.BigBitSet;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.BrokenBarrierException;

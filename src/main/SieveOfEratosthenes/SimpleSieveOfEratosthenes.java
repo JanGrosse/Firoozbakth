@@ -1,21 +1,25 @@
 package main.SieveOfEratosthenes;
 
-import main.BigBitSet;
+import main.Configuration;
+import main.DataStructures.BigBitSet;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 
-public class SimpleSieveOfEratosthenes implements ISieveofEratosthenes {
+public class SimpleSieveOfEratosthenes implements ISieveOfEratosthenes {
     private BigBitSet bitSet;
     private long maxValue;
     private long upperBarrier;
 
     public SimpleSieveOfEratosthenes(long maxValue) {
-        this.bitSet = new BigBitSet(BigInteger.valueOf(maxValue), true);
+        this.bitSet = new BigBitSet(maxValue);
         this.bitSet.setBit(0);
         this.bitSet.setBit(1);
         this.maxValue = maxValue;
         this.upperBarrier = (long) Math.sqrt(maxValue);
+    }
+
+    public SimpleSieveOfEratosthenes() {
+        this(Configuration.instance.findPrimesUpTo);
     }
 
     public void maskPrimes() {
@@ -26,6 +30,7 @@ public class SimpleSieveOfEratosthenes implements ISieveofEratosthenes {
             multiplied = prime * prime;
             //Mark all multiple
             while (multiplied <= maxValue) {
+                //System.out.println(multiplied);
                 bitSet.setBit(multiplied);
                 multiplied += prime;
             }

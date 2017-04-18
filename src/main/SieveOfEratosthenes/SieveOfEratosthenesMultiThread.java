@@ -1,6 +1,7 @@
 package main.SieveOfEratosthenes;
 
-import main.BigBitSet;
+import main.Configuration;
+import main.DataStructures.BigBitSet;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class SieveOfEratosthenesMultiThread implements ISieveofEratosthenes {
+public class SieveOfEratosthenesMultiThread implements ISieveOfEratosthenes {
     //For thread syncing
     private static final Object lock = new Object();
     //For waiting the last threads to finish
@@ -50,6 +51,10 @@ public class SieveOfEratosthenesMultiThread implements ISieveofEratosthenes {
         this.maxValue = maxValue;
         this.lastCheckedNumber = 1;
         this.upperBarrier = (long) Math.sqrt(maxValue);
+    }
+
+    public SieveOfEratosthenesMultiThread() {
+        this(Configuration.instance.threadCount, Configuration.instance.findPrimesUpTo);
     }
 
     private void createThreads() {

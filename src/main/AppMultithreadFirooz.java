@@ -1,6 +1,6 @@
 package main;
 
-import main.Firoozbakht.FiroozbakhtMultithreading;
+import main.Firoozbakht.FiroozbakhtMultiThread;
 import main.database.HSQLDBManager;
 
 public class AppMultithreadFirooz {
@@ -12,7 +12,7 @@ public class AppMultithreadFirooz {
         long[] primes = database.getPrimes(0, 0);
         System.out.println("--- Finished getting --> Start processing ---");
         System.out.println(primes.length + " Primes were loaded! last prime: " + primes[primes.length - 1]);
-        FiroozbakhtMultithreading fb = new FiroozbakhtMultithreading(primes, 8);
+        FiroozbakhtMultiThread fb = new FiroozbakhtMultiThread(primes, 8);
         fb.processPrimes();
         System.out.println("--- Finished processing --> Start checking ---");
         fb.checkFalsify();

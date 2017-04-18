@@ -1,5 +1,7 @@
 package main.PrimeGapsCalculator;
 
+import main.Configuration;
+
 import java.util.ArrayList;
 
 public class PrimeGapsCalculator implements IPrimeGapsCalculator {
@@ -11,6 +13,10 @@ public class PrimeGapsCalculator implements IPrimeGapsCalculator {
         this.primes = primes;
         this.resultLength = primes.length - 1;
         this.results = new long[resultLength];
+    }
+
+    public PrimeGapsCalculator() {
+        this(Configuration.instance.hsqldbManager.getPrimes(0, 0));
     }
 
     @Override

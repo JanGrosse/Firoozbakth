@@ -4,7 +4,7 @@ import main.PrimeGapsCalculator.IPrimeGapsCalculator;
 import main.PrimeGapsCalculator.PrimeGapsCalculator;
 import main.database.HSQLDBManager;
 
-public class AppPrimeGaps {
+public class AppCalculatePrimeGaps {
     public static void main(String[] args) {
         HSQLDBManager database = HSQLDBManager.instance;
         System.out.println("--- Startup ---");

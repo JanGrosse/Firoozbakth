@@ -1,0 +1,13 @@
+# Created by .ignore support plugin (hsz.mobi)
+.gitignore
+.idea/dataSources/8321f623-7f55-411b-b6fb-b5c8496bf9d1.xml
+.idea/dataSources/8321f623-7f55-411b-b6fb-b5c8496bf9d1/
+.idea/workspace.xml
+database/.tmp/
+database/database.db.backup
+database/database.db.data
+database/database.db.lck
+database/database.db.log
+database/database.db.script
+database/database.db.tmp/
+out/

@@ -1,10 +1,12 @@
 package main.Firoozbakht;
 
+import main.Configuration;
+
 import java.util.ArrayList;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-public class FiroozbakhtMultithreading implements IFiroozbakht {
+public class FiroozbakhtMultiThread implements IFiroozbakht {
     private ArrayList<Long> primes;
     private FiroozbakhtRunnable[] threads;
     private double[] tempResults;
@@ -14,13 +16,17 @@ public class FiroozbakhtMultithreading implements IFiroozbakht {
     private int threadCount;
     private CyclicBarrier finalBarrier;
 
-    public FiroozbakhtMultithreading(long[] primes, int threadCount) {
+    public FiroozbakhtMultiThread(long[] primes, int threadCount) {
         this.primes = toArrayList(primes);
         this.length = primes.length;
         this.tempResults = new double[length];
         this.threadCount = threadCount;
         this.finalBarrier = new CyclicBarrier(threadCount + 1);
         this.threads = new FiroozbakhtRunnable[threadCount];
+    }
+
+    public FiroozbakhtMultiThread(long[] primes) {
+        this(primes, Configuration.instance.threadCount);
     }
 
     private ArrayList<Long> toArrayList(long[] primes) {
