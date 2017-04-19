@@ -73,10 +73,11 @@ public enum HSQLDBManager {
     public synchronized ArrayPair<Long, Double> getFiroozbakhtPrimePairs(int limit, int offset) {
         try {
             int length, iteration = 0;
-            if (limit == 0){
-                ResultSet count = connection.createStatement().executeQuery("SELECT COUNT(p.PRIME_ID) AS cou FROM FIROOZBAKHT_CONJECTURE f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID LIMIT " + limit + " OFFSET " + offset);
+            if (limit == 0) {
+                ResultSet count = connection.createStatement().executeQuery("SELECT COUNT(p.PRIME_ID) AS cou FROM FIROOZBAKHT_CONJECTURE f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID;");
                 count.next();
                 length = count.getInt("cou") - offset;
+                if (length > limit) length = limit;
             } else {
                 length = limit;
             }
@@ -122,17 +123,17 @@ public enum HSQLDBManager {
     public synchronized ArrayPair<Long, Long> getPrimePrimeGapPairs(int limit, int offset) {
         try {
             int length, iteration = 0;
-            if (limit == 0){
-                ResultSet count = connection.createStatement().executeQuery("SELECT  COUNT(p.PRIME_ID) AS cou FROM PRIME_GAPS f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID LIMIT " + limit + " OFFSET " + offset);
+            if (limit == 0) {
+                ResultSet count = connection.createStatement().executeQuery("SELECT  COUNT(p.PRIME_ID) AS cou FROM PRIME_GAPS f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID");
                 count.next();
                 length = count.getInt("cou") - offset;
+                if ((limit > 0) && (length > limit)) length = limit;
             } else {
                 length = limit;
             }
             Long[] primeGaps = new Long[length];
             Long[] primes = new Long[length];
             ResultSet result = connection.createStatement().executeQuery("SELECT p.PRIME_VALUE, f.VALUE FROM PRIME_GAPS f, PRIMES p WHERE p.PRIME_ID = f.PRIME_ID LIMIT " + limit + " OFFSET " + offset);
-            ;
             while (result.next()) {
                 primes[iteration] = result.getLong(1);
                 primeGaps[iteration] = result.getLong(2);
@@ -197,7 +198,7 @@ public enum HSQLDBManager {
         long[] primes;
         int length;
         try {
-            if (limit == 0){
+            if (limit == 0) {
                 ResultSet count = connection.createStatement().executeQuery("SELECT COUNT(PRIME_ID) AS cou FROM PRIMES LIMIT " + limit + " OFFSET " + offset);
                 count.next();
                 length = count.getInt("cou") - offset;

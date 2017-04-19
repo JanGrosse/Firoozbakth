@@ -95,7 +95,7 @@ public class ShowPrimeGapsStage extends Stage {
         int size = allPrimes.size(), index = 0, highestIndex = 0;
         while (index < size && allPrimes.get(index) < customXMaximum) index++;
         index--;
-        while (index != 0) {
+        while (index > 0) {
             if (allPrimeGaps.get(index) > highest) {
                 highest = allPrimeGaps.get(index);
                 highestIndex = index;

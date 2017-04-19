@@ -8,11 +8,11 @@ public class BigBitSet implements Comparable<BigBitSet> {
     //Will store the maxValue; If the decimal value is too big for BigInteger it stays null
     private BigInteger maxValueDecimal;
     //Calculate the maximum unsigned number long can hold: one time positive and plus one extra negative
-    private BigInteger longMaxDecimal = BigInteger.valueOf(Long.MAX_VALUE).multiply(new BigInteger("2")).add(new BigInteger("1"));
+    private BigInteger longMaxDecimal = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
     //Max Value of long plus one is the value of the new MSB
-    private BigInteger MSBValueDecimal = BigInteger.valueOf(Long.MAX_VALUE).add(new BigInteger("1"));
+    private BigInteger MSBValueDecimal = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE);
     //Decimal base for every long
-    private BigInteger baseDecimal = longMaxDecimal.add(new BigInteger("1"));
+    private BigInteger baseDecimal = longMaxDecimal.add(BigInteger.ONE);
     //Get bit count of long. Plus one for the sign bit
     private int bitsPerLong = Long.bitCount(Long.MAX_VALUE) + 1;
     //count of long arrays
@@ -38,7 +38,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
         if (value.signum() == -1) throw new Error("Max value is negative!");
         if (bitsNotStorable) {
             int longCount;
-            BigInteger sixtyFour = new BigInteger("64");
+            BigInteger sixtyFour = BigInteger.valueOf(64);
             BigInteger maxIntVal = BigInteger.valueOf(Integer.MAX_VALUE - 5);
             //maximum array length is Integer.MAX_VALUE - 5
             if (maxIntVal.multiply(sixtyFour).compareTo(value) != 1) {
@@ -56,7 +56,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
     public BigBitSet(long bits) {
         if (bits < 0) throw new Error("Max value is negative!");
         int longCount;
-        BigInteger sixtyFour = new BigInteger("64");
+        BigInteger sixtyFour = BigInteger.valueOf(64);
         BigInteger maxIntVal = BigInteger.valueOf(Integer.MAX_VALUE - 5);
         //maximum array length is Integer.MAX_VALUE - 5
         if (maxIntVal.multiply(sixtyFour).compareTo(BigInteger.valueOf(bits)) != 1) {
@@ -109,7 +109,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
 
     private void initArrayViaMaxValue(BigInteger max) {
         BigInteger temp = max;
-        BigInteger zero = new BigInteger("0");
+        BigInteger zero = BigInteger.ZERO;
         while (temp.compareTo(zero) != 0) {
             longCount++;
             temp = temp.divide(baseDecimal);
@@ -126,7 +126,7 @@ public class BigBitSet implements Comparable<BigBitSet> {
             BigInteger maxInt = BigInteger.valueOf(Integer.MAX_VALUE);
             BigInteger one = BigInteger.valueOf(1);
             if (bitCount.compareTo(maxInt) == -1) {
-                BigInteger two = new BigInteger("2");
+                BigInteger two = BigInteger.valueOf(2);
                 //Calculate the max decimal value; decrement one for the zero
                 maxValueDecimal = two.pow(bitCount.intValue()).subtract(one);
             } else {
@@ -350,44 +350,10 @@ public class BigBitSet implements Comparable<BigBitSet> {
         return akkuLongA;
     }
 
-//    //TODO Doesnt work that way
-//    public void multiply(BigBitSet otherSet) {
-//        akkuBitSet = otherSet.bitSetArray;
-//        akkuIntA = longCount - 1;
-//        //Find the smaller bitset
-//        if (otherSet.getLongCount() < akkuIntA) akkuIntA = otherSet.getLongCount() - 1;
-//        //Iterate over all longs and add them up
-//        while (akkuIntA >= 0) {
-//            if (bitSetArray[akkuIntA] == 0 || akkuBitSet[akkuIntA] == 0) {
-//                akkuIntA--;
-//                continue;
-//            }
-//            //branch
-//            akkuLongA = (bitSetArray[akkuIntA] & 0xFFFFFFFF00000000L) >>> 32L;
-//            akkuLongB = (akkuBitSet[akkuIntA] & 0xFFFFFFFF00000000L) >>> 32L;
-//            akkuLongC = akkuBitSet[akkuIntA] & 0x00000000FFFFFFFFL;
-//            akkuLongD = bitSetArray[akkuIntA] & 0x00000000FFFFFFFFL;
-//            //multiply lower branch
-//            akkuLongC *= akkuLongD;
-//            //multiply upper branch
-//            akkuLongA *= akkuLongB;
-//            //store overflow bits and shit the rest
-//            akkuLongB = (akkuLongA & 0xFFFFFFFF00000000L) >>> 32L;
-//            //merge branches, adjust upper branch
-//            bitSetArray[akkuIntA] = addBinary(akkuLongA << 32L, akkuLongC, akkuIntA);
-//            //Add overflow
-//            if (akkuIntA + 1 < longCount) {
-//                bitSetArray[akkuIntA + 1] = addBinary(bitSetArray[akkuIntA + 1], akkuLongB, akkuIntA + 1);
-//            }
-//            akkuIntA--;
-//        }
-//
-//    }
-
     /*    Conversions     */
 
     public BigInteger toBigInteger() {
-        BigInteger sum = new BigInteger("0");
+        BigInteger sum = BigInteger.valueOf(0);
         BigInteger multiplier;
         long temp;
         for (int i = 0; i < longCount; i++) {
